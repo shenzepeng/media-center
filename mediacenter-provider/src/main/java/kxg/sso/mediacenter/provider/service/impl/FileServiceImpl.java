@@ -44,7 +44,8 @@ public class FileServiceImpl implements FileService {
         f.setRemark(remark);
         f.setMd5(MD5Utils.getMD5String(file.getBytes()));
         fileDao.addFile(f);
-        BeanUtils.copyProperties(fileUrl,f);
+        fileUrl.setCreateTime(new Date());
+        fileUrl.setUrl(httpToHttps.split("\\?")[0]);
         return fileUrl;
     }
 
