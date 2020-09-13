@@ -25,9 +25,9 @@
         </commentGenerator>
         <!--jdbc的数据库连接 -->
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://47.102.36.76:3306/t_file?useSSL=false"
-                        userId="root"
-                        password="123456">
+                        connectionURL="jdbc:mysql://sh-cdb-2h0hokg2.sql.tencentcdb.com:61540/fileupload?useSSL=false"
+                        userId="kxg_file"
+                        password="A201909291119383582153">
         </jdbcConnection>
         <!-- 非必需，类型处理器，在数据库类型和java类型之间的转换控制-->
         <javaTypeResolver>

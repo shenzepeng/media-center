@@ -34,14 +34,15 @@ public class FileServiceImpl implements FileService {
     @Override
     public UpFileResponse uploadFile(MultipartFile file, HttpServletRequest request,String remark) {
         if (file.isEmpty()){
-            throw new RuntimeException("图像不能为空");
+            throw new RuntimeException("file can not be null");
         }
         UpFileResponse fileUrl=new UpFileResponse();
         String md5String = MD5Utils.getMD5String(file.getBytes());
         List<File> fileByMd5 = fileDao.findFileByMd5(md5String);
         if (!CollectionUtils.isEmpty(fileByMd5)){
             fileUrl.setCreateTime(fileByMd5.get(0).getCreateTime());
-            fileUrl.setUrl(fileByMd5.get(0).getFileUrl());
+            fileUrl.setUrl(fileByMd5.get(0).getFileUrl().split("\\?")[0]);
+            return fileUrl;
         }
         String name = ossClient.uploadImg2Oss(file);
         String imgUrlEachOne = ossClient.getImgUrl(name);
