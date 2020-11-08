@@ -15,9 +15,9 @@
     <dubbo:monitor protocol="${dubbo.monitor.protocol}"/>
     <dubbo:provider retries="${dubbo.provider.retries}" timeout="${dubbo.provider.timeout}" threads="${dubbo.provider.threads}"/>
 
-    <!-- 声明需要暴露的服务接口 -->
-    <dubbo:service interface="kxg.sso.mediacenter.service.DemoService" ref="demoService" />
+<!--    &lt;!&ndash; 声明需要暴露的服务接口 &ndash;&gt;-->
+<!--    <dubbo:service interface="kxg.sso.mediacenter.service.DemoService" ref="demoService" />-->
 
-    <!-- 和本地bean一样实现服务 -->
-    <bean id="demoService" class="kxg.sso.mediacenter.provider.dubbo.service.DemoServiceImpl" />
+<!--    &lt;!&ndash; 和本地bean一样实现服务 &ndash;&gt;-->
+<!--    <bean id="demoService" class="kxg.sso.mediacenter.provider.dubbo.service.DemoServiceImpl" />-->
 </beans>

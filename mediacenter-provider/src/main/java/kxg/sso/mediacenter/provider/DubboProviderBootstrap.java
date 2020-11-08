@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import tk.mybatis.spring.annotation.MapperScan;
-@EnableApolloConfig({"application","database","redis","dubbo"})
+//@EnableApolloConfig({"application","database","redis","dubbo"})
 @EnableScheduling
 @EnableSwagger2
 @MapperScan("kxg.sso.mediacenter.provider.mapper")
