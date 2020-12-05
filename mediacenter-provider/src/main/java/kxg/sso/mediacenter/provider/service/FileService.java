@@ -11,5 +11,6 @@ import java.awt.image.BufferedImage;
  * 要写注释呀
  */
 public interface FileService {
-    UpFileResponse uploadFile(MultipartFile file, HttpServletRequest request,String reamrk) ;
+    UpFileResponse uploadFile(MultipartFile file, HttpServletRequest request,String remark) ;
+    UpFileResponse uploadByUrl(String url,String remark );
 }

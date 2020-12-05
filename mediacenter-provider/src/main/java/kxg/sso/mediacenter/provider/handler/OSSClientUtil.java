@@ -30,7 +30,7 @@ public class OSSClientUtil {
     //空间
     private String bucketName = "kxg-neituibao-jianli";
     //文件存储目录
-    private String filedir = "data/";
+    private String filedir = "sss/";
 
     private OSSClient ossClient;
 
@@ -57,15 +57,16 @@ public class OSSClientUtil {
      *
      * @param url
      */
-    public void uploadImg2Oss(String url) {
+    public String uploadImg2Oss(String url) {
         File fileOnServer = new File(url);
         FileInputStream fin;
         try {
             fin = new FileInputStream(fileOnServer);
             String[] split = url.split("/");
-            this.uploadFile2OSS(fin, split[split.length - 1]);
+            return this.uploadFile2OSS(fin, split[split.length - 1]);
         } catch (FileNotFoundException e) {
-            //System.out.println(e.getMessage());
+            System.out.println(e.getMessage());
+            return null;
         }
     }
 
@@ -77,6 +78,22 @@ public class OSSClientUtil {
         System.out.println(name);
         try {
             InputStream inputStream = file.getInputStream();
+            this.uploadFile2OSS(inputStream, name);
+            return name;
+        } catch (Exception e) {
+            System.out.println(e.getStackTrace());
+            return null;
+        }
+
+    }
+
+    public String uploadImg2Oss(File file,String fileName) {
+        String substring = fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
+        Random random = new Random();
+        String name = random.nextInt(10000) + System.currentTimeMillis() + substring;
+        System.out.println(name);
+        try {
+            InputStream inputStream =new FileInputStream(file);
             this.uploadFile2OSS(inputStream, name);
             return name;
         } catch (Exception e) {
@@ -194,6 +211,12 @@ public class OSSClientUtil {
         }
         if (FilenameExtension.equalsIgnoreCase(".xml")) {
             return "text/xml";
+        }
+        if (FilenameExtension.equalsIgnoreCase(".mp4")) {
+            return "video/mp4";
+        }
+        if (FilenameExtension.equalsIgnoreCase(".mp3")) {
+            return "audio/mp3";
         }
         return "image/jpeg";
     }
