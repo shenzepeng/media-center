@@ -81,6 +81,23 @@ public class FileServiceImpl implements FileService {
         return fileUrl;
     }
 
+    /**
+     * 文件下载重试3次
+     * @param url
+     * @param localFile
+     * @throws IOException
+     */
+    private void saveFile(String url,java.io.File localFile) throws IOException {
+        if (!localFile.exists()){
+            FileUtils.copyURLToFile(new URL(url), localFile, 200, 2000);
+        }
+        if (!localFile.exists()){
+            FileUtils.copyURLToFile(new URL(url), localFile, 200, 2000);
+        }
+        if (!localFile.exists()){
+            FileUtils.copyURLToFile(new URL(url), localFile, 200, 2000);
+        }
+    }
 
     @Override
     public UpFileResponse uploadByUrl(String url, String remark) {
@@ -92,7 +109,7 @@ public class FileServiceImpl implements FileService {
             java.io.File localFile = new java.io.File(imagePath);
             log.info("fileName {}", fileName);
             // 生成的图片位置
-            FileUtils.copyURLToFile(new URL(url), localFile, 200, 2000);
+            saveFile(url,localFile);
             String md5Hex = DigestUtils.md5Hex(new FileInputStream(imagePath));
             log.info("imagePath {},md5 {}", imagePath, md5Hex);
             List<File> fileByMd5 = fileDao.findFileByMd5(md5Hex);
@@ -103,7 +120,13 @@ public class FileServiceImpl implements FileService {
                 return fileUrl;
             }
             //对文件进行修复，有的文件没有后缀，有的胡写，通过文件头还原真正的文件
-            String fileType = VerifyFileTypeUtils.getFileType(localFile);
+            String fileType=null;
+            if (url.contains(".mp4")){
+                fileType="mp4";
+            }else {
+                fileType = VerifyFileTypeUtils.getFileType(localFile);
+            }
+
             log.info("fileType {}",fileType);
             //将文件上传到阿里云
             //将文件上传到文件服务器
