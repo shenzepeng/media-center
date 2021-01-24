@@ -82,11 +82,11 @@
 <!--        <table tableName="t_user" domainObjectName="YdUser">-->
 <!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
 <!--        </table>-->
-        <table tableName="t_remark" domainObjectName="Remark">
+        <table tableName="t_small_application_json" domainObjectName="SmallApplicationJson">
             <generatedKey column="id" sqlStatement="MySql" identity="true"/>
         </table>
-        <table tableName="t_file" domainObjectName="File">
-            <generatedKey column="id" sqlStatement="MySql" identity="true"/>
-        </table>
+<!--        <table tableName="t_file" domainObjectName="File">-->
+<!--            <generatedKey column="id" sqlStatement="MySql" identity="true"/>-->
+<!--        </table>-->
     </context>
 </generatorConfiguration>

@@ -69,6 +69,7 @@ public class FileServiceImpl implements FileService {
         }
         String name = ossClient.uploadImg2Oss(file);
         String imgUrlEachOne = ossClient.getImgUrl(name);
+        log.info("imgUrlEachOne {}",imgUrlEachOne);
         //将http转化为https
         String httpToHttps = imgUrlEachOne.replaceAll("http://", "https://");
         File f = new File();
@@ -82,19 +83,24 @@ public class FileServiceImpl implements FileService {
     }
 
     /**
-     * 文件下载重试3次
+     * 文件下载重试6次
      * @param url
      * @param localFile
      * @throws IOException
      */
     private void saveFile(String url,java.io.File localFile) throws IOException {
-        if (!localFile.exists()){
-            FileUtils.copyURLToFile(new URL(url), localFile, 200, 2000);
+        for (int i=0;i<6;i++){
+            if (!localFile.exists()){
+                try {
+                    FileUtils.copyURLToFile(new URL(url), localFile, 200, 2000);
+                }catch (Exception e){
+                    System.err.println(e);
+                }
+            }else {
+                break;
+            }
         }
-        if (!localFile.exists()){
-            FileUtils.copyURLToFile(new URL(url), localFile, 200, 2000);
-        }
-        if (!localFile.exists()){
+        if (!localFile.exists()) {
             FileUtils.copyURLToFile(new URL(url), localFile, 200, 2000);
         }
     }
@@ -102,51 +108,53 @@ public class FileServiceImpl implements FileService {
     @Override
     public UpFileResponse uploadByUrl(String url, String remark) {
         try {
-            UpFileResponse fileUrl = new UpFileResponse();
-            String parseSuffix = parseXSXC(url);
-            String fileName = UUID.randomUUID().toString() + "." + parseSuffix;
-            String imagePath = fileDir.getFileDir() + "/" + fileName;
-            java.io.File localFile = new java.io.File(imagePath);
-            log.info("fileName {}", fileName);
-            // 生成的图片位置
-            saveFile(url,localFile);
-            String md5Hex = DigestUtils.md5Hex(new FileInputStream(imagePath));
-            log.info("imagePath {},md5 {}", imagePath, md5Hex);
-            List<File> fileByMd5 = fileDao.findFileByMd5(md5Hex);
-            if (!CollectionUtils.isEmpty(fileByMd5)) {
-                fileUrl.setCreateTime(fileByMd5.get(0).getCreateTime());
-                fileUrl.setUrl(fileByMd5.get(0).getFileUrl().split("\\?")[0]);
-                deleteFile(imagePath);
-                return fileUrl;
-            }
-            //对文件进行修复，有的文件没有后缀，有的胡写，通过文件头还原真正的文件
-            String fileType=null;
-            if (url.contains(".mp4")){
-                fileType="mp4";
-            }else {
-                fileType = VerifyFileTypeUtils.getFileType(localFile);
-            }
+            synchronized (url.intern()) {
+                UpFileResponse fileUrl = new UpFileResponse();
+                String parseSuffix = parseXSXC(url);
+                String fileName = UUID.randomUUID().toString() + "." + parseSuffix;
+                String imagePath = fileDir.getFileDir() + "/" + fileName;
+                java.io.File localFile = new java.io.File(imagePath);
+                log.info("fileName {}", fileName);
+                // 生成的图片位置
+                saveFile(url, localFile);
+                String md5Hex = DigestUtils.md5Hex(new FileInputStream(imagePath));
+                log.info("imagePath {},md5 {}", imagePath, md5Hex);
+                List<File> fileByMd5 = fileDao.findFileByMd5(md5Hex);
+                if (!CollectionUtils.isEmpty(fileByMd5)) {
+                    fileUrl.setCreateTime(fileByMd5.get(0).getCreateTime());
+                    fileUrl.setUrl(fileByMd5.get(0).getFileUrl().split("\\?")[0]);
+                    deleteFile(imagePath);
+                    return fileUrl;
+                }
+                //对文件进行修复，有的文件没有后缀，有的胡写，通过文件头还原真正的文件
+                String fileType = null;
+                if (url.contains(".mp4")) {
+                    fileType = ".mp4";
+                } else {
+                    fileType = VerifyFileTypeUtils.getFileType(localFile);
+                }
 
-            log.info("fileType {}",fileType);
-            //将文件上传到阿里云
-            //将文件上传到文件服务器
-            String name = ossClient.uploadImg2Oss(localFile, UUID.randomUUID().toString()+"."+fileType);
-            String imgUrlEachOne = ossClient.getImgUrl(name);
-            log.info("imgUrlEachOne {}", imgUrlEachOne);
-            //将http转化为https
-            String httpToHttps = imgUrlEachOne.replaceAll("http://", "https://");
-            File f = new File();
-            f.setFileUrl(httpToHttps);
-            f.setRemark(remark);
-            f.setMd5(md5Hex);
-            fileDao.addFile(f);
-            fileUrl.setCreateTime(new Date());
-            fileUrl.setUrl(httpToHttps.split("\\?")[0]);
-            UpFileResponse upFileResponse = new UpFileResponse();
-            upFileResponse.setUrl(httpToHttps.split("\\?")[0]);
-            upFileResponse.setCreateTime(new Date());
-            deleteFile(imagePath);
-            return upFileResponse;
+                log.info("fileType {}", fileType);
+                //将文件上传到阿里云
+                //将文件上传到文件服务器
+                String name = ossClient.uploadImg2Oss(localFile, UUID.randomUUID().toString() + "." + fileType);
+                String imgUrlEachOne = ossClient.getImgUrl(name);
+                log.info("imgUrlEachOne {}", imgUrlEachOne);
+                //将http转化为https
+                String httpToHttps = imgUrlEachOne.replaceAll("http://", "https://");
+                File f = new File();
+                f.setFileUrl(httpToHttps);
+                f.setRemark(remark);
+                f.setMd5(md5Hex);
+                fileDao.addFile(f);
+                fileUrl.setCreateTime(new Date());
+                fileUrl.setUrl(httpToHttps.split("\\?")[0]);
+                UpFileResponse upFileResponse = new UpFileResponse();
+                upFileResponse.setUrl(httpToHttps.split("\\?")[0]);
+                upFileResponse.setCreateTime(new Date());
+                deleteFile(imagePath);
+                return upFileResponse;
+            }
         } catch (Throwable e) {
             ExecutorService executorService = Executors.newSingleThreadExecutor();
             executorService.execute(()->{
